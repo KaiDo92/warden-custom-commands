@@ -92,11 +92,10 @@ running this project from. It is recommended however to deploy the project local
     ```
     cd ~/Work/htdocs/magentoden
     ```
-3. Copy all files (except .gitignore file) from this repository to project directory.
 
-4. Update some required variables in .env file (please refer to the .env.example file in this repository for guidance).
+3. Create a new .env file in the project's root directory and ensure that you update the necessary variables accordingly (please refer to the .env.example file in this repository for guidance).
 
-5. Run the init script to bootstrap the environment.
+4. Run the init script to bootstrap the environment.
     ```
     den bootstrap
     ```

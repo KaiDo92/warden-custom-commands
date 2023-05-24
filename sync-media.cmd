@@ -32,7 +32,7 @@ DUMP_INCLUDE_PRODUCT=0
 
 while (( "$#" )); do
     case "$1" in
-        -e|--environment=*)
+        --environment=*|-e=*|--e=*)
             DUMP_SOURCE="${1#*=}"
             shift
             ;;
@@ -58,9 +58,9 @@ fi
 EXCLUDE=( 'tmp' 'itm' 'import' 'export' 'importexport' 'captcha' '*.gz' '*.zip' '*.tar' '*.7z' '*.sql' 'amasty/blog/cache' )
 
 if [[ "$DUMP_INCLUDE_PRODUCT" -eq "1" ]]; then
-  EXCLUDE+=('catalog/product/cache')
+    EXCLUDE+=('catalog/product/cache')
 else
-  EXCLUDE+=('catalog/product')
+    EXCLUDE+=('catalog/product')
 fi
 
 exclude_opts=()

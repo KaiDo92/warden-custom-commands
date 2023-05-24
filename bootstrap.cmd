@@ -39,14 +39,12 @@ while (( "$#" )); do
             ADMIN_CREATE=
             shift
             ;;
-        --db-dump)
-            shift
-            DB_DUMP="$1"
+        --db-dump=*)
+            DB_DUMP="${1#*=}"
             shift
             ;;
-        -e|--environment)
-            shift
-            BASE_ENV=$(echo "$1" | tr '[:upper:]' '[:lower:]')
+        --environment=*|-e=*|--e=*)
+            BASE_ENV=$(echo "${1#*=}" | tr '[:upper:]' '[:lower:]')
             shift
             ;;
         *)
@@ -187,12 +185,12 @@ if [[ ${DB_IMPORT} ]]; then
     if [[ -z "$DB_DUMP" ]]; then
         DB_DUMP="${WARDEN_ENV_NAME}_${BASE_ENV}-`date +%Y%m%dT%H%M%S`.sql.gz"
         :: Get database
-        den db-dump --environment ${BASE_ENV} --file "${DB_DUMP}"
+        den db-dump --environment=${BASE_ENV} --file="${DB_DUMP}"
     fi
 
     if [[ "$DB_DUMP" ]]; then
         :: Importing database
-        den import-db --file "${DB_DUMP}"
+        den import-db --file="${DB_DUMP}"
     fi
 fi
 
@@ -200,7 +198,7 @@ den set-config
 
 if [[ $MEDIA_SYNC ]]; then
     :: Syncing media from remote server
-    den sync-media -e ${BASE_ENV}
+    den sync-media -e=${BASE_ENV}
 fi
 
 if [[ $ADMIN_CREATE -eq "1" ]]; then

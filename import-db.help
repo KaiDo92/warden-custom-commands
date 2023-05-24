@@ -8,6 +8,6 @@ WARDEN_USAGE=$(cat <<EOF
 \033[33mOptions:\033[0m
   -h, --help                   Display this help menu.
 
-  -f, --file <file>.sql        Path to existing database dump file. Can be gzipped.
+  -f, --file=<file>.sql        Path to existing database dump file. Can be gzipped.
 EOF
 )

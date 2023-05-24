@@ -140,10 +140,6 @@ while (( "$#" )); do
             ENV_VAR=$(echo "${1#*=}" | tr '[:lower:]' '[:upper:]')
             shift
             ;;
-        --environment|--e|-e)
-            ENV_VAR=$(echo "${2}" | tr '[:lower:]' '[:upper:]')
-            shift 2
-            ;;
         -a)
             OPEN_CL=1
             shift

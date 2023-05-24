@@ -47,11 +47,11 @@ DUMP_FILENAME=
 
 while (( "$#" )); do
     case "$1" in
-        -f|--file)
+        --file=*|-f=*|--f=*)
             DUMP_FILENAME="${1#*=}"
             shift
             ;;
-        -e|--environment)
+        --environment=*|-e=*|--e=*)
             DUMP_SOURCE="${1#*=}"
             shift
             ;;

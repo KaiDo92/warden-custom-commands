@@ -11,9 +11,9 @@ Dump remote database and download it locally.
   -h, --help                   Display this help menu.
 
 \033[33mArguments:\033[0m
-  -f, --file <file>.sql.gz     Output file.
+  -f, --file=<file>.sql.gz     Output file.
 
-  -e,--environment <dev|production|staging>  Specific environment to run a database backup from. Default: staging.
+  -e, --environment=<dev|production|staging>  Specific environment to run a database backup from. Default: staging.
 
 EOF
 )

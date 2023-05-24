@@ -10,7 +10,7 @@ PV=`which pv || which cat`
 
 while (( "$#" )); do
     case "$1" in
-        -f|--file)
+        --file=*|-f=*|--f=*)
             DUMP_FILENAME="${1#*=}"
             shift
             ;;
