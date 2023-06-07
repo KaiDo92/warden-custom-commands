@@ -12,6 +12,7 @@ META_PACKAGE="magento/project-community-edition"
 META_VERSION=""
 INCLUDE_SAMPLE=
 AUTO_PULL=1
+DOWNLOAD_SOURCE=
 DB_DUMP=
 DB_IMPORT=1
 MEDIA_SYNC=1
@@ -52,6 +53,10 @@ while (( "$#" )); do
             AUTO_PULL=
             shift
             ;;
+        --download-source)
+            DOWNLOAD_SOURCE=1
+            shift
+            ;;
         --skip-db-import)
             DB_IMPORT=
             shift
@@ -82,6 +87,12 @@ while (( "$#" )); do
             ;;
     esac
 done
+
+## download files from the remote
+if [[ $DOWNLOAD_SOURCE ]]; then
+    den download-source -e=${BASE_ENV}
+    den env exec -T php-fpm sh -c "rm -rf /var/www/html/app/etc/env.php" || true
+fi
 
 ## include check for DB_DUMP file only when database import is expected
 [[ ${DB_IMPORT} ]] && [[ "$DB_DUMP" ]] && REQUIRED_FILES+=("${DB_DUMP}")

@@ -2,17 +2,17 @@
 [[ ! ${WARDEN_DIR} ]] && >&2 echo -e "\033[31mThis script is not intended to be run directly!\033[0m" && exit 1
 
 WARDEN_USAGE=$(cat <<EOF
-Download media files from a remote environment to the local file system.
+Download files from a remote environment to the local file system.
 Extra options and arguments are passed through.
 
 \033[33mUsage:\033[0m
-  sync-media [-h|--help] [--cloud|--adobe-cloud]
+  download-source [-h|--help]
 
 \033[33mOptions:\033[0m
   -h, --help                                Display this help menu
 
 \033[33mArguments:\033[0m
-  -e, --environment=<dev|production|staging>  Environment to sync media from. Default: dev
+  -e, --environment=<dev|production|staging>  Environment to sync files from. Default: dev
 
 EOF
 )
