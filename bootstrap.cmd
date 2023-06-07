@@ -7,6 +7,10 @@ source "${SUBCOMMAND_DIR}"/env-variables
 
 ## configure command defaults
 REQUIRED_FILES=("${WARDEN_ENV_PATH}/auth.json")
+CLEAN_INSTALL=
+META_PACKAGE="magento/project-community-edition"
+META_VERSION=""
+INCLUDE_SAMPLE=
 AUTO_PULL=1
 DB_DUMP=
 DB_IMPORT=1
@@ -19,6 +23,31 @@ BASE_ENV=dev
 ## parse arguments
 while (( "$#" )); do
     case "$1" in
+        --clean-install)
+            CLEAN_INSTALL=1
+            COMPOSER_INSTALL=
+            DB_IMPORT=
+            MEDIA_SYNC=
+            shift
+            ;;
+        --meta-package=*)
+            META_PACKAGE="${1#*=}"
+            shift
+            ;;
+        --meta-version=*)
+            META_VERSION="${1#*=}"
+            if
+                ! test $(version "${META_VERSION}") -ge "$(version 2.3.4)" \
+                && [[ ! "${META_VERSION}" =~ ^2\.[3-9]\.x$ ]]
+            then
+                fatal "Invalid --meta-version=${META_VERSION} specified (valid values are 2.3.4 or later and 2.[3-9].x)"
+            fi
+            shift
+            ;;
+        --include-sample)
+            INCLUDE_SAMPLE=1
+            shift
+            ;;
         --no-pull)
             AUTO_PULL=
             shift
@@ -53,62 +82,6 @@ while (( "$#" )); do
             ;;
     esac
 done
-
-if [ ! -f "${WARDEN_ENV_PATH}/app/etc/env.php" ]; then
-    cat <<EOT > "${WARDEN_ENV_PATH}/app/etc/env.php"
-<?php
-return [
-    'backend' => [
-        'frontName' => 'admin'
-    ],
-    'crypt' => [
-        'key' => '00000000000000000000000000000000'
-    ],
-    'db' => [
-        'table_prefix' => '',
-        'connection' => [
-            'default' => [
-                'host' => 'db',
-                'dbname' => 'magento',
-                'username' => 'magento',
-                'password' => 'magento',
-                'active' => '1'
-            ]
-        ]
-    ],
-    'resource' => [
-        'default_setup' => [
-            'connection' => 'default'
-        ]
-    ],
-    'x-frame-options' => 'SAMEORIGIN',
-    'MAGE_MODE' => 'developer',
-    'session' => [
-        'save' => 'files'
-    ],
-    'cache_types' => [
-        'config' => 1,
-        'layout' => 1,
-        'block_html' => 0,
-        'collections' => 1,
-        'reflection' => 1,
-        'db_ddl' => 1,
-        'compiled_config' => 1,
-        'eav' => 1,
-        'customer_notification' => 1,
-        'config_integration' => 1,
-        'config_integration_api' => 1,
-        'full_page' => 0,
-        'config_webservice' => 1,
-        'translate' => 1
-    ],
-    'install' => [
-        'date' => 'Mon, 01 May 2023 00:00:00 +0000'
-    ]
-];
-
-EOT
-fi
 
 ## include check for DB_DUMP file only when database import is expected
 [[ ${DB_IMPORT} ]] && [[ "$DB_DUMP" ]] && REQUIRED_FILES+=("${DB_DUMP}")
@@ -194,7 +167,97 @@ if [[ ${DB_IMPORT} ]]; then
     fi
 fi
 
+if [ ! -f "${WARDEN_ENV_PATH}/app/etc/env.php" ] && [ ! $CLEAN_INSTALL ]; then
+    cat <<EOT > "${WARDEN_ENV_PATH}/app/etc/env.php"
+<?php
+return [
+    'backend' => [
+        'frontName' => 'admin'
+    ],
+    'crypt' => [
+        'key' => '00000000000000000000000000000000'
+    ],
+    'db' => [
+        'table_prefix' => '',
+        'connection' => [
+            'default' => [
+                'host' => 'db',
+                'dbname' => 'magento',
+                'username' => 'magento',
+                'password' => 'magento',
+                'active' => '1'
+            ]
+        ]
+    ],
+    'resource' => [
+        'default_setup' => [
+            'connection' => 'default'
+        ]
+    ],
+    'x-frame-options' => 'SAMEORIGIN',
+    'MAGE_MODE' => 'developer',
+    'session' => [
+        'save' => 'files'
+    ],
+    'cache_types' => [
+        'config' => 1,
+        'layout' => 1,
+        'block_html' => 0,
+        'collections' => 1,
+        'reflection' => 1,
+        'db_ddl' => 1,
+        'compiled_config' => 1,
+        'eav' => 1,
+        'customer_notification' => 1,
+        'config_integration' => 1,
+        'config_integration_api' => 1,
+        'full_page' => 0,
+        'config_webservice' => 1,
+        'translate' => 1
+    ],
+    'install' => [
+        'date' => 'Mon, 01 May 2023 00:00:00 +0000'
+    ]
+];
+
+EOT
+fi
+
+if [[ ${CLEAN_INSTALL} ]] && [[ ! -f "${WARDEN_WEB_ROOT}/composer.json" ]]; then
+    :: Installing Magento website
+    den env exec -T php-fpm rsync -a auth.json /home/www-data/.composer/
+    den env exec -T php-fpm sh -c "rm -rf /tmp/create-project"
+    den env exec -T php-fpm composer create-project --repository-url=https://repo.magento.com/ "${META_PACKAGE}" /tmp/create-project "${META_VERSION}"
+    den env exec -T php-fpm rsync -a /tmp/create-project/ /var/www/html/
+
+    ELASTICSEARCH_HOSTNAME="elasticsearch"
+    if [[ $WARDEN_OPENSEARCH ]]; then
+        ELASTICSEARCH_HOSTNAME="opensearch"
+    fi
+
+    den env exec -T php-fpm bin/magento setup:install \
+        --backend-frontname=admin \
+        --db-host=db \
+        --db-name=magento \
+        --db-user=magento \
+        --db-password=magento \
+        --search-engine=elasticsearch7 \
+        --elasticsearch-host=${ELASTICSEARCH_HOSTNAME} \
+        --elasticsearch-port=9200 \
+        --elasticsearch-index-prefix=magento2 \
+        --elasticsearch-enable-auth=0 \
+        --elasticsearch-timeout=15 || true
+fi
+
 den set-config
+
+if [[ ${CLEAN_INSTALL} ]] && [[ $INCLUDE_SAMPLE ]]; then
+    :: Installing sample data
+    den env exec -T php-fpm bin/magento sample:deploy
+    den env exec -T php-fpm bin/magento setup:upgrade
+    den env exec -T php-fpm bin/magento indexer:reindex
+    den env exec -T php-fpm bin/magento cache:flush
+fi
 
 if [[ $MEDIA_SYNC ]]; then
     :: Syncing media from remote server

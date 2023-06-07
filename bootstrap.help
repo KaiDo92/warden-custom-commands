@@ -8,6 +8,14 @@ WARDEN_USAGE=$(cat <<EOF
 \033[33mOptions:\033[0m
   -h, --help              Display this help menu
 
+  --clean-install         Perform clean installation
+
+  --meta-package          Magento meta package (magento/project-community-edition, magento/project-enterprise-edition)
+
+  --meta-version          Magento version
+
+  --include-sample        Include sample data into the installation
+
   --no-pull               When specified latest images will not be explicitly pulled prior
                           to environment startup to facilitate use of locally built images
 
