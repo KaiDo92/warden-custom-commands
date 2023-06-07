@@ -55,6 +55,7 @@ while (( "$#" )); do
             ;;
         --download-source)
             DOWNLOAD_SOURCE=1
+            COMPOSER_INSTALL=
             shift
             ;;
         --skip-db-import)
@@ -92,6 +93,10 @@ done
 if [[ $DOWNLOAD_SOURCE ]]; then
     den download-source -e=${BASE_ENV}
     den env exec -T php-fpm sh -c "rm -rf /var/www/html/app/etc/env.php" || true
+    den env exec -T php-fpm sh -c "mkdir /var/www/html/generated" || true
+    den env exec -T php-fpm sh -c "mkdir /var/www/html/pub/media" || true
+    den env exec -T php-fpm sh -c "mkdir /var/www/html/pub/static" || true
+    den env exec -T php-fpm sh -c "mkdir /var/www/html/var" || true
 fi
 
 ## include check for DB_DUMP file only when database import is expected
