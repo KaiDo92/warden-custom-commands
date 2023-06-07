@@ -227,7 +227,8 @@ if [[ ${CLEAN_INSTALL} ]] && [[ ! -f "${WARDEN_WEB_ROOT}/composer.json" ]]; then
     :: Installing Magento website
     den env exec -T php-fpm rsync -a auth.json /home/www-data/.composer/
     den env exec -T php-fpm sh -c "rm -rf /tmp/create-project"
-    den env exec -T php-fpm composer create-project --repository-url=https://repo.magento.com/ "${META_PACKAGE}" /tmp/create-project "${META_VERSION}"
+    den env exec -T php-fpm composer create-project -q -n \
+        --repository-url=https://repo.magento.com/ "${META_PACKAGE}" /tmp/create-project "${META_VERSION}"
     den env exec -T php-fpm rsync -a /tmp/create-project/ /var/www/html/
 
     ELASTICSEARCH_HOSTNAME="elasticsearch"
