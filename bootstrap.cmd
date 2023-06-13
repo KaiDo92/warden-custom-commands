@@ -183,6 +183,12 @@ if [[ ${DB_IMPORT} ]]; then
     fi
 fi
 
+if [ -z ${WARDEN_TABLE_PREFIX+x} ]; then
+    TABLE_PREFIX=
+else
+    TABLE_PREFIX="$WARDEN_TABLE_PREFIX"
+fi
+
 if [ ! -f "${WARDEN_ENV_PATH}/app/etc/env.php" ] && [ ! $CLEAN_INSTALL ]; then
     cat <<EOT > "${WARDEN_ENV_PATH}/app/etc/env.php"
 <?php
@@ -194,7 +200,7 @@ return [
         'key' => '00000000000000000000000000000000'
     ],
     'db' => [
-        'table_prefix' => '',
+        'table_prefix' => '${TABLE_PREFIX}',
         'connection' => [
             'default' => [
                 'host' => 'db',
@@ -258,6 +264,7 @@ if [[ ${CLEAN_INSTALL} ]] && [[ ! -f "${WARDEN_WEB_ROOT}/composer.json" ]]; then
         --db-name=magento \
         --db-user=magento \
         --db-password=magento \
+        --db-prefix=${TABLE_PREFIX} \
         --search-engine=elasticsearch7 \
         --elasticsearch-host=${ELASTICSEARCH_HOSTNAME} \
         --elasticsearch-port=9200 \
