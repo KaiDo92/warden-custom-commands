@@ -254,7 +254,7 @@ if [[ ${CLEAN_INSTALL} ]] && [[ ! -f "${WARDEN_WEB_ROOT}/composer.json" ]]; then
     den env exec -T php-fpm rsync -a /tmp/create-project/ /var/www/html/
 
     ELASTICSEARCH_HOSTNAME="elasticsearch"
-    if [[ $WARDEN_OPENSEARCH ]]; then
+    if [[ "$WARDEN_OPENSEARCH" -eq "1" ]]; then
         ELASTICSEARCH_HOSTNAME="opensearch"
     fi
 

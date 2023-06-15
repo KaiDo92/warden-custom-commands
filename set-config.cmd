@@ -21,7 +21,7 @@ fi
 if [[ "$WARDEN_ELASTICSEARCH" -eq "1" ]] || [[ "$WARDEN_OPENSEARCH" -eq "1" ]]; then
     :: Configuring ElasticSearch
     ELASTICSEARCH_HOSTNAME="elasticsearch"
-    if [[ "$WARDEN_OPENSEARCH" ]]; then
+    if [[ "$WARDEN_OPENSEARCH" -eq "1" ]]; then
         ELASTICSEARCH_HOSTNAME="opensearch"
     fi
 
