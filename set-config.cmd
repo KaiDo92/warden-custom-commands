@@ -52,11 +52,12 @@ den env exec -T php-fpm bin/magento deploy:mode:set -s developer || true
 #den env exec -T php-fpm bin/magento app:config:dump themes scopes i18n || true
 
 :: Other configuration
+den env exec -T php-fpm bin/magento config:set web/seo/use_rewrites 1 || true
+den env exec -T php-fpm bin/magento config:set web/secure/offloader_header X-Forwarded-Proto || true
 den env exec -T php-fpm bin/magento config:set admin/url/use_custom 0 || true
 den env exec -T php-fpm bin/magento config:set admin/security/password_is_forced 0 || true
 den env exec -T php-fpm bin/magento config:set admin/security/admin_account_sharing 1 || true
 den env exec -T php-fpm bin/magento config:set admin/security/session_lifetime 31536000 || true
-den env exec -T php-fpm bin/magento config:set web/secure/offloader_header X-Forwarded-Proto || true
 den env exec -T php-fpm bin/magento config:set payment/checkmo/active 1 || true
 
 if [[ "$WARDEN_VARNISH" -eq "1" ]]; then
