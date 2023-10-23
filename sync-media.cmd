@@ -55,7 +55,7 @@ if [ -z ${!DUMP_ENV+x} ]; then
     exit 2
 fi
 
-EXCLUDE=( 'tmp' 'itm' 'import' 'export' 'importexport' 'captcha' '*.gz' '*.zip' '*.tar' '*.7z' '*.sql' 'amasty/blog/cache' )
+EXCLUDE=('*.gz' '*.zip' '*.tar' '*.7z' '*.sql' 'tmp' 'itm' 'import' 'export' 'importexport' 'captcha' 'analytics' 'opti_image' 'webp_image' 'shoppingfeed' 'amasty/blog/cache')
 
 if [[ "$DUMP_INCLUDE_PRODUCT" -eq "1" ]]; then
     EXCLUDE+=('catalog/product/cache')
