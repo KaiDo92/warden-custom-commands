@@ -30,13 +30,15 @@ function dumpPremise () {
     eval "ssh_port=\${"REMOTE_${DUMP_SOURCE_VAR}_PORT"}"
     eval "remote_dir=\${"REMOTE_${DUMP_SOURCE_VAR}_PATH"}"
 
-    local db_info=$(ssh -p $ssh_port $ssh_user@$ssh_host 'php -r "\$a=include \"'"$remote_dir"'/app/etc/env.php\"; var_export(\$a[\"db\"][\"connection\"][\"default\"]);"')
-    local db_host=$(den env exec php-fpm php -r "\$a=$db_info;echo \$a['host'];")
-    local db_user=$(den env exec php-fpm php -r "\$a=$db_info;echo \$a['username'];")
-    local db_pass=$(den env exec php-fpm php -r "\$a=$db_info;echo \$a['password'];")
-    local db_name=$(den env exec php-fpm php -r "\$a=$db_info;echo \$a['dbname'];")
+    local db_info=$(ssh -p $ssh_port $ssh_user@$ssh_host 'php -r "\$a = include \"'"$remote_dir"'/app/etc/env.php\"; var_export(\$a[\"db\"][\"connection\"][\"default\"]);"')
+    local db_host=$(den env exec php-fpm php -r "\$a = $db_info; echo strpos(\$a['host'], ':') === false ? \$a['host'] : explode(':', \$a['host'])[0];")
+    local db_port=$(den env exec php-fpm php -r "\$a = $db_info; echo strpos(\$a['host'], ':') === false ? '3306' : explode(':', \$a['host'])[1];")
+    local db_user=$(den env exec php-fpm php -r "\$a = $db_info; echo \$a['username'];")
+    local db_pass=$(den env exec php-fpm php -r "\$a = $db_info; echo \$a['password'];")
+    local db_name=$(den env exec php-fpm php -r "\$a = $db_info; echo \$a['dbname'];")
 
-    local db_dump="export MYSQL_PWD=\"${db_pass}\";mysqldump --no-tablespaces -h$db_host -u$db_user $db_name --skip-triggers | gzip"
+    local db_dump="export MYSQL_PWD=\"${db_pass}\";mysqldump --no-tablespaces -h$db_host -P$db_port -u$db_user $db_name --skip-triggers | gzip"
+
     echo -e "⌛ \033[1;32mDumping \033[33m${db_name}\033[1;32m database from \033[33m${ssh_host}\033[1;32m...\033[0m"
     ssh -p $ssh_port $ssh_user@$ssh_host "$db_dump" > "$DUMP_FILENAME"
 }
