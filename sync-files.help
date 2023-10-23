@@ -6,13 +6,14 @@ Download files from a remote environment to the local file system.
 Extra options and arguments are passed through.
 
 \033[33mUsage:\033[0m
-  download-source [-h|--help]
+  sync-media [-h|--help] [--cloud|--adobe-cloud]
 
 \033[33mOptions:\033[0m
   -h, --help                                  Display this help menu
 
 \033[33mArguments:\033[0m
-  -e, --environment=<dev|staging|production>  Environment to sync files from. Default: dev
+  -e, --environment=<dev|production|staging>  Environment to sync files from. Default: dev
+  -p, --path=<dump_path>                      Specify dump path. Default: pub/media/
 
 EOF
 )

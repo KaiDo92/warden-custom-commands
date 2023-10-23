@@ -5,16 +5,11 @@ SUBCOMMAND_DIR=$(dirname "${BASH_SOURCE[0]}")
 source "${SUBCOMMAND_DIR}"/env-variables
 
 DUMP_SOURCE=dev
-DUMP_INCLUDE_PRODUCT=0
 
 while (( "$#" )); do
     case "$1" in
         --environment=*|-e=*|--e=*)
             DUMP_SOURCE="${1#*=}"
-            shift
-            ;;
-        --include-product)
-            DUMP_INCLUDE_PRODUCT=1
             shift
             ;;
         *)
@@ -32,7 +27,7 @@ if [ -z ${!DUMP_ENV+x} ]; then
     exit 2
 fi
 
-EXCLUDE=( '/generated' '/var' '/pub/media' '/pub/static' '*.gz' '*.zip' '*.tar' '*.7z' '*.sql' )
+EXCLUDE=('/generated' '/var' '/pub/media' '/pub/static' '*.gz' '*.zip' '*.tar' '*.7z' '*.sql')
 
 exclude_opts=()
 for item in "${EXCLUDE[@]}"; do

@@ -28,7 +28,7 @@ WARDEN_USAGE=$(cat <<EOF
   --skip-admin-create     Skips over admin user create.
 
 \033[33mArguments:\033[0m
-  -e, --environment=<dev|production|staging>  Environment to sync media from. Default: dev
+  -e, --environment=<dev|staging|production>  Environment to sync media from. Default: dev
 
   --db-dump=<file>.sql.gz                     Expects path to .sql.gz file for import during init
 
