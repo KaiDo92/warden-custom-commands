@@ -189,6 +189,12 @@ else
     TABLE_PREFIX="$WARDEN_TABLE_PREFIX"
 fi
 
+if [ -z ${WARDEN_ENCRYPT_KEY+x} ]; then
+    ENCRYPT_KEY=00000000000000000000000000000000
+else
+    ENCRYPT_KEY="$WARDEN_ENCRYPT_KEY"
+fi
+
 if [ ! -f "${WARDEN_ENV_PATH}/app/etc/env.php" ] && [ ! $CLEAN_INSTALL ]; then
     cat <<EOT > "${WARDEN_ENV_PATH}/app/etc/env.php"
 <?php
@@ -197,7 +203,7 @@ return [
         'frontName' => 'admin'
     ],
     'crypt' => [
-        'key' => '00000000000000000000000000000000'
+        'key' => '${ENCRYPT_KEY}'
     ],
     'db' => [
         'table_prefix' => '${TABLE_PREFIX}',
