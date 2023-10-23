@@ -91,12 +91,12 @@ done
 
 ## download files from the remote
 if [[ $DOWNLOAD_SOURCE ]]; then
-    den download-source -e=${BASE_ENV}
-    den env exec -T php-fpm sh -c "rm -rf /var/www/html/app/etc/env.php" || true
-    den env exec -T php-fpm sh -c "mkdir /var/www/html/generated" || true
-    den env exec -T php-fpm sh -c "mkdir /var/www/html/pub/media" || true
-    den env exec -T php-fpm sh -c "mkdir /var/www/html/pub/static" || true
-    den env exec -T php-fpm sh -c "mkdir /var/www/html/var" || true
+    warden download-source -e=${BASE_ENV}
+    warden env exec -T php-fpm sh -c "rm -rf /var/www/html/app/etc/env.php" || true
+    warden env exec -T php-fpm sh -c "mkdir /var/www/html/generated" || true
+    warden env exec -T php-fpm sh -c "mkdir /var/www/html/pub/media" || true
+    warden env exec -T php-fpm sh -c "mkdir /var/www/html/pub/static" || true
+    warden env exec -T php-fpm sh -c "mkdir /var/www/html/var" || true
 fi
 
 ## include check for DB_DUMP file only when database import is expected
@@ -112,7 +112,7 @@ if [[ $OSTYPE =~ ^darwin ]] && ! which mutagen >/dev/null 2>&1 && which brew >/d
 fi
 
 ## check for presence of host machine dependencies
-for DEP_NAME in den mutagen docker-compose pv; do
+for DEP_NAME in warden mutagen docker-compose pv; do
     if [[ "${DEP_NAME}" = "mutagen" ]] && [[ ! $OSTYPE =~ ^darwin ]]; then
         continue
     fi
@@ -142,31 +142,29 @@ done
 ## exit script if there are any missing dependencies or configuration files
 [[ ${INIT_ERROR} ]] && exit 1
 
-:: Starting Den
-den svc up
+:: Starting Warden
+warden svc up
 if [[ ! -f ~/.den/ssl/certs/${TRAEFIK_DOMAIN}.crt.pem ]]; then
-    den sign-certificate ${TRAEFIK_DOMAIN}
+    warden sign-certificate ${TRAEFIK_DOMAIN}
 fi
 
 :: Initializing environment
 if [[ $AUTO_PULL ]]; then
-    den env pull --ignore-pull-failures || true
-    den env build --pull
+    warden env pull --ignore-pull-failures || true
+    warden env build --pull
 else
-    den env build
+    warden env build
 fi
-den env up -d
+warden env up -d
 
 ## wait for mariadb to start listening for connections
-den shell -c "while ! nc -z db 3306 </dev/null; do sleep 2; done"
+warden shell -c "while ! nc -z db 3306 </dev/null; do sleep 2; done"
 
 if [[ $COMPOSER_INSTALL ]]; then
     :: Installing dependencies
-    if [[ ${COMPOSER_VERSION} == 1 ]]; then
-        den env exec -T php-fpm bash \
-            -c '[[ $(composer -V | cut -d\  -f3 | cut -d. -f1) == 2 ]] || composer global require hirak/prestissimo'
-    fi
-    den env exec -T php-fpm composer install
+    warden env exec -T php-fpm bash \
+      -c '[[ $(composer -V | cut -d\  -f3 | cut -d. -f1) == 2 ]] || composer global require hirak/prestissimo'
+    warden env exec -T php-fpm composer install
 fi
 
 ## import database only if --skip-db-import is not specified
@@ -174,12 +172,12 @@ if [[ ${DB_IMPORT} ]]; then
     if [[ -z "$DB_DUMP" ]]; then
         DB_DUMP="${WARDEN_ENV_NAME}_${BASE_ENV}-`date +%Y%m%dT%H%M%S`.sql.gz"
         :: Get database
-        den db-dump --environment=${BASE_ENV} --file="${DB_DUMP}"
+        warden db-dump --environment=${BASE_ENV} --file="${DB_DUMP}"
     fi
 
     if [[ "$DB_DUMP" ]]; then
         :: Importing database
-        den import-db --file="${DB_DUMP}"
+        warden import-db --file="${DB_DUMP}"
     fi
 fi
 
@@ -253,18 +251,18 @@ fi
 
 if [[ ${CLEAN_INSTALL} ]] && [[ ! -f "${WARDEN_WEB_ROOT}/composer.json" ]]; then
     :: Installing Magento website
-    den env exec -T php-fpm rsync -a auth.json /home/www-data/.composer/
-    den env exec -T php-fpm sh -c "rm -rf /tmp/create-project"
-    den env exec -T php-fpm composer create-project -q -n \
+    warden env exec -T php-fpm rsync -a auth.json /home/www-data/.composer/
+    warden env exec -T php-fpm sh -c "rm -rf /tmp/create-project"
+    warden env exec -T php-fpm composer create-project -q -n \
         --repository-url=https://repo.magento.com/ "${META_PACKAGE}" /tmp/create-project "${META_VERSION}"
-    den env exec -T php-fpm rsync -a /tmp/create-project/ /var/www/html/
+    warden env exec -T php-fpm rsync -a /tmp/create-project/ /var/www/html/
 
     ELASTICSEARCH_HOSTNAME="elasticsearch"
     if [[ "$WARDEN_OPENSEARCH" -eq "1" ]]; then
         ELASTICSEARCH_HOSTNAME="opensearch"
     fi
 
-    den env exec -T php-fpm bin/magento setup:install \
+    warden env exec -T php-fpm bin/magento setup:install \
         --backend-frontname=admin \
         --db-host=db \
         --db-name=magento \
@@ -279,24 +277,24 @@ if [[ ${CLEAN_INSTALL} ]] && [[ ! -f "${WARDEN_WEB_ROOT}/composer.json" ]]; then
         --elasticsearch-timeout=15 || true
 fi
 
-den set-config
+warden set-config
 
 if [[ ${CLEAN_INSTALL} ]] && [[ $INCLUDE_SAMPLE ]]; then
     :: Installing sample data
-    den env exec -T php-fpm bin/magento sample:deploy
-    den env exec -T php-fpm bin/magento setup:upgrade
-    den env exec -T php-fpm bin/magento indexer:reindex
-    den env exec -T php-fpm bin/magento cache:flush
+    warden env exec -T php-fpm bin/magento sample:deploy
+    warden env exec -T php-fpm bin/magento setup:upgrade
+    warden env exec -T php-fpm bin/magento indexer:reindex
+    warden env exec -T php-fpm bin/magento cache:flush
 fi
 
 if [[ $MEDIA_SYNC ]]; then
     :: Syncing media from remote server
-    den sync-media -e=${BASE_ENV}
+    warden sync-media -e=${BASE_ENV}
 fi
 
 if [[ $ADMIN_CREATE -eq "1" ]]; then
     :: Creating admin user
-    den env exec -T php-fpm bin/magento admin:user:create \
+    warden env exec -T php-fpm bin/magento admin:user:create \
         --admin-user=admin \
         --admin-password=Admin123$ \
         --admin-firstname=Admin \

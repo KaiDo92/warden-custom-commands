@@ -55,10 +55,10 @@ function remote_db () {
     eval "remote_dir=\${"REMOTE_${ENV_VAR}_PATH"}"
 
     local db_info=$(ssh -p $ssh_port $ssh_user@$ssh_host 'php -r "\$a=include \"'"$remote_dir"'/app/etc/env.php\"; var_export(\$a[\"db\"][\"connection\"][\"default\"]);"')
-    local db_host=$(den env exec php-fpm php -r "\$a=$db_info;echo \$a['host'];")
-    local db_user=$(den env exec php-fpm php -r "\$a=$db_info;echo \$a['username'];")
-    local db_pass=$(den env exec php-fpm php -r "\$a=$db_info;echo \$a['password'];")
-    local db_name=$(den env exec php-fpm php -r "\$a=$db_info;echo \$a['dbname'];")
+    local db_host=$(warden env exec php-fpm php -r "\$a=$db_info;echo \$a['host'];")
+    local db_user=$(warden env exec php-fpm php -r "\$a=$db_info;echo \$a['username'];")
+    local db_pass=$(warden env exec php-fpm php -r "\$a=$db_info;echo \$a['password'];")
+    local db_name=$(warden env exec php-fpm php -r "\$a=$db_info;echo \$a['dbname'];")
 
     DB="mysql://$db_user:$db_pass@127.0.0.1:$LOCAL_PORT/$db_name?compression=1"
 
@@ -94,7 +94,7 @@ function cloud_db() {
 }
 
 function local_shell() {
-    den shell
+    warden shell
 }
 
 function remote_shell() {
