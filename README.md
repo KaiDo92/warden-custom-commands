@@ -75,43 +75,15 @@ Useful URLs on DEV:
     sudo systemctl restart systemd-resolved
     ```
 
-### Initializing Environment
-
-In the below examples `~/Work/htdocs/magento` is used as the path. Simply replace this with whatever path you will be
-running this project from. It is recommended however to deploy the project locally to a case-sensitive volume.
-
-1. Clone the project codebase.
-    ```
-    git clone -b develop git@github.com:<GITHUB_ACCOUNT>/<REPOSITORY_NAME>.git ~/Work/htdocs/magento
-    ```
-2. Change into the project directory.
-    ```
-    cd ~/Work/htdocs/magento
-    ```
-
-3. Create a new .env file in the project's root directory and ensure that you update the necessary variables accordingly (please refer to the .env.example file in this repository for guidance).
-
-4. Run the init script to bootstrap the environment.
-    ```
-    warden bootstrap
-    ```
-
-### Additional Configuration
-
-Information on configuring and using tools such as Xdebug, LiveReload, MFTF, and multi-domain site setups may be found
-in the Warden docs page on [Configuration](https://docs.warden.dev/configuration.html).
-
-### Destroying Environment
-
-To completely destroy the local environment we just created, run `warden env down -v` to tear down the project’s Docker
-containers, volumes, and (where applicable) cleanup the Mutagen sync session.
-
 # Warden Custom Commands
 
 Provides additional commands to simplify local installation.
 
 ### Installation
-Clone this repository in `~/.warden/commands` to install it globally (recommended), or locally per project in `[project directory]/.warden/commands`.
+Clone this [repository](https://github.com/KaiDo92/warden-custom-commands) in `~/.warden/commands` to install it globally (recommended), or locally per project in `[project directory]/.warden/commands`.
+```
+git clone https://github.com/KaiDo92/warden-custom-commands.git ~/.warden/commands
+```
 
 ### Configuration
 In the project `.env` (after `warden env-init`), add and configure these values:
@@ -143,6 +115,10 @@ Additionally, you must have this variable:
 
 For all commands, execute `warden <command> -h` to see the details of all options.
 
+`warden self-update`
+* Pull the latest update
+* Apply fixes and improvements
+
 `warden bootstrap`
 * Create and configure Warden environment
 * Download and import database dump from selected remote
@@ -166,3 +142,43 @@ For all commands, execute `warden <command> -h` to see the details of all option
 * Open DB tunnel to local or remote environments
 * SSH to local or remote environments
 * Show SFTP link you can use in your SFTP client
+
+`warden download-source`
+* Download all source code from selected remote
+
+`warden sync-files`
+* Download files from selected remote
+
+`warden set-config`
+* Update Magento configurations
+
+### Initializing Environment
+
+In the below examples `~/Work/htdocs/magento` is used as the path. Simply replace this with whatever path you will be
+running this project from. It is recommended however to deploy the project locally to a case-sensitive volume.
+
+1. Clone the project codebase.
+    ```
+    git clone -b develop git@github.com:<GITHUB_ACCOUNT>/<REPOSITORY_NAME>.git ~/Work/htdocs/magento
+    ```
+2. Change into the project directory.
+    ```
+    cd ~/Work/htdocs/magento
+    ```
+
+3. Create a new .env file in the project's root directory and ensure that you update the necessary variables accordingly (please refer to the .env.example file in this repository for guidance).
+
+4. Run the init script to bootstrap the environment.
+    ```
+    warden bootstrap
+    ```
+
+### Additional Configuration
+
+Information on configuring and using tools such as Xdebug, LiveReload, MFTF, and multi-domain site setups may be found
+in the Warden docs page on [Configuration](https://docs.warden.dev/configuration.html).
+
+### Destroying Environment
+
+To completely destroy the local environment we just created, run `warden env down -v` to tear down the project’s Docker
+containers, volumes, and (where applicable) cleanup the Mutagen sync session.
