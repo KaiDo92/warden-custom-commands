@@ -4,8 +4,8 @@
 SUBCOMMAND_DIR=$(dirname "${BASH_SOURCE[0]}")
 source "${SUBCOMMAND_DIR}"/env-variables
 
-DUMP_FILENAME=""
-SET_CONFIG=""
+DUMP_FILENAME=
+
 PV=`which pv || which cat`
 
 while (( "$#" )); do
@@ -14,12 +14,24 @@ while (( "$#" )); do
             DUMP_FILENAME="${1#*=}"
             shift
             ;;
-        -*|--*|*)
-            echo "Unrecognized argument '$1'"
-            exit 2
+        -f)
+            DUMP_FILENAME="${2}"
+            shift 2
+            ;;
+        *)
+            shift
             ;;
     esac
 done
+
+if [[ -z "$DUMP_FILENAME" ]] && [[ -n "${WARDEN_PARAMS[0]+1}" ]]; then
+    DUMP_FILENAME="${WARDEN_PARAMS[0]}"
+fi
+
+if [ ! -f "$DUMP_FILENAME" ]; then
+    echo -e "😮 \033[31mDump file $DUMP_FILENAME not found\033[0m"
+    exit 1
+fi
 
 # Ensure the database service is started for this environment
 launchedDatabaseContainer=0
@@ -32,10 +44,6 @@ if [[ -z "$DB_CONTAINER_ID" ]]; then
         exit 1
     fi
     launchedDatabaseContainer=1
-fi
-if [ ! -f "$DUMP_FILENAME" ]; then
-    echo -e "😮 \033[31mDump file $DUMP_FILENAME not found\033[0m"
-    exit 1
 fi
 
 echo -e "⌛ \033[1;32mDropping and initializing docker database ...\033[0m"

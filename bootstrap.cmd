@@ -11,14 +11,12 @@ CLEAN_INSTALL=
 META_PACKAGE="magento/project-community-edition"
 META_VERSION=""
 INCLUDE_SAMPLE=
-AUTO_PULL=1
 DOWNLOAD_SOURCE=
 DB_DUMP=
 DB_IMPORT=1
 MEDIA_SYNC=1
 COMPOSER_INSTALL=1
 ADMIN_CREATE=1
-BASE_ENV=dev
 
 ## argument parsing
 ## parse arguments
@@ -49,10 +47,6 @@ while (( "$#" )); do
             INCLUDE_SAMPLE=1
             shift
             ;;
-        --no-pull)
-            AUTO_PULL=
-            shift
-            ;;
         --download-source)
             DOWNLOAD_SOURCE=1
             COMPOSER_INSTALL=
@@ -78,20 +72,15 @@ while (( "$#" )); do
             DB_DUMP="${1#*=}"
             shift
             ;;
-        --environment=*|-e=*|--e=*)
-            BASE_ENV=$(echo "${1#*=}" | tr '[:upper:]' '[:lower:]')
-            shift
-            ;;
         *)
-            error "Unrecognized argument '$1'"
-            exit -1
+            shift
             ;;
     esac
 done
 
 ## download files from the remote
 if [[ $DOWNLOAD_SOURCE ]]; then
-    warden download-source -e=${BASE_ENV}
+    warden download-source -e=${ENV_SOURCE}
     warden env exec -T php-fpm sh -c "rm -rf /var/www/html/app/etc/env.php" || true
     warden env exec -T php-fpm sh -c "mkdir /var/www/html/generated" || true
     warden env exec -T php-fpm sh -c "mkdir /var/www/html/pub/media" || true
@@ -149,13 +138,7 @@ if [[ ! -f ~/.den/ssl/certs/${TRAEFIK_DOMAIN}.crt.pem ]]; then
 fi
 
 :: Initializing environment
-if [[ $AUTO_PULL ]]; then
-    warden env pull --ignore-pull-failures || true
-    warden env build --pull
-else
-    warden env build
-fi
-warden env up -d
+warden env up
 
 ## wait for mariadb to start listening for connections
 warden shell -c "while ! nc -z db 3306 </dev/null; do sleep 2; done"
@@ -170,21 +153,15 @@ fi
 ## import database only if --skip-db-import is not specified
 if [[ ${DB_IMPORT} ]]; then
     if [[ -z "$DB_DUMP" ]]; then
-        DB_DUMP="${WARDEN_ENV_NAME}_${BASE_ENV}-`date +%Y%m%dT%H%M%S`.sql.gz"
+        DB_DUMP="var/${WARDEN_ENV_NAME}_${ENV_SOURCE}-`date +%Y%m%dT%H%M%S`.sql.gz"
         :: Get database
-        warden db-dump --environment=${BASE_ENV} --file="${DB_DUMP}"
+        warden db-dump --file="${DB_DUMP}" -e "$ENV_SOURCE"
     fi
 
     if [[ "$DB_DUMP" ]]; then
         :: Importing database
         warden import-db --file="${DB_DUMP}"
     fi
-fi
-
-if [ -z ${WARDEN_TABLE_PREFIX+x} ]; then
-    TABLE_PREFIX=
-else
-    TABLE_PREFIX="$WARDEN_TABLE_PREFIX"
 fi
 
 if [ -z ${WARDEN_ENCRYPT_KEY+x} ]; then
@@ -194,7 +171,7 @@ else
 fi
 
 if [ ! -f "${WARDEN_ENV_PATH}/app/etc/env.php" ] && [ ! $CLEAN_INSTALL ]; then
-    cat <<EOT > "${WARDEN_ENV_PATH}/app/etc/env.php"
+    cat << EOT > "${WARDEN_ENV_PATH}/app/etc/env.php"
 <?php
 return [
     'backend' => [
@@ -204,7 +181,7 @@ return [
         'key' => '${ENCRYPT_KEY}'
     ],
     'db' => [
-        'table_prefix' => '${TABLE_PREFIX}',
+        'table_prefix' => '${DB_PREFIX}',
         'connection' => [
             'default' => [
                 'host' => 'db',
@@ -212,7 +189,13 @@ return [
                 'username' => 'magento',
                 'password' => 'magento',
                 'active' => '1'
-            ]
+            ],
+             'indexer' => [
+                 'host' => 'db',
+                 'dbname' => 'magento',
+                 'username' => 'magento',
+                 'password' => 'magento',
+             ]
         ]
     ],
     'resource' => [
@@ -268,7 +251,7 @@ if [[ ${CLEAN_INSTALL} ]] && [[ ! -f "${WARDEN_WEB_ROOT}/composer.json" ]]; then
         --db-name=magento \
         --db-user=magento \
         --db-password=magento \
-        --db-prefix=${TABLE_PREFIX} \
+        --db-prefix=${DB_PREFIX} \
         --search-engine=elasticsearch7 \
         --elasticsearch-host=${ELASTICSEARCH_HOSTNAME} \
         --elasticsearch-port=9200 \
@@ -289,7 +272,7 @@ fi
 
 if [[ $MEDIA_SYNC ]]; then
     :: Syncing media from remote server
-    warden sync-media -e=${BASE_ENV}
+    warden sync-media -e "$ENV_SOURCE"
 fi
 
 if [[ $ADMIN_CREATE -eq "1" ]]; then
