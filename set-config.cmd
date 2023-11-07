@@ -4,8 +4,11 @@
 SUBCOMMAND_DIR=$(dirname "${BASH_SOURCE[0]}")
 source "${SUBCOMMAND_DIR}"/env-variables
 
+:: Installing application
+warden env exec -T php-fpm bin/magento setup:upgrade || true
+
 :: Configuring application
-warden env exec -T php-fpm bin/magento app:config:import
+warden env exec -T php-fpm bin/magento app:config:import || true
 
 if [ ! -f "${WARDEN_ENV_PATH}/app/etc/config.php" ]; then
     :: Enabling all modules
@@ -34,14 +37,13 @@ if [[ "$WARDEN_REDIS" -eq "1" ]]; then
     warden env exec -T php-fpm bin/magento setup:config:set --session-save=redis --session-save-redis-host=redis --session-save-redis-max-concurrency=20 --session-save-redis-db=2 --session-save-redis-port=6379 --no-interaction || true
 fi
 
-:: Installing application
-warden env exec -T php-fpm bin/magento setup:upgrade
-
+:: Update configuration
 warden db connect -e "UPDATE ${DB_PREFIX}core_config_data SET value = 'https://${TRAEFIK_SUBDOMAIN}.${TRAEFIK_DOMAIN}/' WHERE path IN ('web/secure/base_url', 'web/unsecure/base_url', 'web/secure/base_link_url', 'web/unsecure/base_link_url')" || true
 warden db connect -e "UPDATE ${DB_PREFIX}core_config_data SET value = 'dev_$((1000 + $RANDOM % 10000))' WHERE path = 'algoliasearch_credentials/credentials/index_prefix'" || true
 warden env exec -T php-fpm bin/magento config:set web/unsecure/base_url "https://${TRAEFIK_SUBDOMAIN}.${TRAEFIK_DOMAIN}/" || true
 warden env exec -T php-fpm bin/magento config:set web/secure/base_url "https://${TRAEFIK_SUBDOMAIN}.${TRAEFIK_DOMAIN}/" || true
 
+:: Enable developer mode
 warden env exec -T php-fpm bin/magento deploy:mode:set -s developer || true
 
 :: Other configuration
@@ -70,12 +72,12 @@ warden env exec -T php-fpm bin/magento config:set klaviyo_reclaim_webhook/klaviy
 if [[ "$WARDEN_VARNISH" -eq "1" ]]; then
     :: Configuring Varnish
     warden env exec -T php-fpm bin/magento setup:config:set --http-cache-hosts=varnish || true
-    warden env exec -T php-fpm bin/magento config:set system/full_page_cache/varnish/backend_host varnish
-    warden env exec -T php-fpm bin/magento config:set system/full_page_cache/varnish/backend_port 80
-    warden env exec -T php-fpm bin/magento config:set system/full_page_cache/caching_application 2
-    warden env exec -T php-fpm bin/magento config:set system/full_page_cache/ttl 604800
+    warden env exec -T php-fpm bin/magento config:set system/full_page_cache/varnish/backend_host varnish || true
+    warden env exec -T php-fpm bin/magento config:set system/full_page_cache/varnish/backend_port 80 || true
+    warden env exec -T php-fpm bin/magento config:set system/full_page_cache/caching_application 2 || true
+    warden env exec -T php-fpm bin/magento config:set system/full_page_cache/ttl 604800 || true
 else
-    warden env exec -T php-fpm bin/magento config:set system/full_page_cache/caching_application 1
+    warden env exec -T php-fpm bin/magento config:set system/full_page_cache/caching_application 1 || true
 fi
 
 if [ ! -z ${WARDEN_PWA+x} ] && [[ "$WARDEN_PWA" -eq "1" ]]; then
@@ -99,7 +101,6 @@ fi
 
 :: Flushing cache
 warden env exec -T php-fpm bin/magento cache:flush || true
-#warden env exec -T php-fpm bin/magento cache:disable block_html full_page || true
 
 :: Reindex data
 warden env exec -T php-fpm bin/magento indexer:reindex || true
