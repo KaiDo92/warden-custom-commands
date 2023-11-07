@@ -5,11 +5,11 @@ SUBCOMMAND_DIR=$(dirname "${BASH_SOURCE[0]}")
 source "${SUBCOMMAND_DIR}"/env-variables
 
 IGNORED_TABLES=(
-    'admin_passwords'
-    'admin_system_messages'
     'admin_user'
+    'admin_passwords'
     'admin_user_expiration'
     'admin_user_session'
+    'admin_system_messages'
     'adminnotification_inbox'
     'cache_tag'
     'catalog_product_index_price_final_idx'
@@ -191,7 +191,7 @@ function dumpPremise () {
 }
 
 DUMP_FILENAME=
-EXCLUDE_CUSTOMER_DATA=0
+EXCLUDE_SENSITIVE_DATA=0
 
 while (( "$#" )); do
     case "$1" in
@@ -203,8 +203,8 @@ while (( "$#" )); do
             DUMP_FILENAME="${2}"
             shift 2
             ;;
-        --exclude-customer-data)
-            EXCLUDE_CUSTOMER_DATA=1
+        --exclude-sensitive-data)
+            EXCLUDE_SENSITIVE_DATA=1
             shift
             ;;
         *)
@@ -221,7 +221,7 @@ if [ -z "$DUMP_FILENAME" ]; then
     DUMP_FILENAME="var/${WARDEN_ENV_NAME}_${ENV_SOURCE}-`date +%Y%m%dT%H%M%S`.sql.gz"
 fi
 
-if [[ "$EXCLUDE_CUSTOMER_DATA" -eq "1" ]]; then
+if [[ "$EXCLUDE_SENSITIVE_DATA" -eq "1" ]]; then
     IGNORED_TABLES+=(
         'sales_order' 'sales_order_address' 'sales_order_grid' 'sales_order_item' 'sales_order_payment' 'sales_order_status_history' 'sales_order_tax' 'sales_order_tax_item' 'magento_sales_order_grid_archive'
         'sales_invoice' 'sales_invoice_comment' 'sales_invoice_grid' 'sales_invoice_item' 'magento_sales_invoice_grid_archive'
