@@ -5,12 +5,6 @@ SUBCOMMAND_DIR=$(dirname "${BASH_SOURCE[0]}")
 source "${SUBCOMMAND_DIR}"/env-variables
 
 IGNORED_TABLES=(
-    'admin_user'
-    'admin_passwords'
-    'admin_user_expiration'
-    'admin_user_session'
-    'admin_system_messages'
-    'adminnotification_inbox'
     'cache_tag'
     'catalog_product_index_price_final_idx'
     'catalog_product_index_price_bundle_opt_idx'
@@ -223,6 +217,7 @@ fi
 
 if [[ "$EXCLUDE_SENSITIVE_DATA" -eq "1" ]]; then
     IGNORED_TABLES+=(
+        'admin_user' 'admin_passwords' 'admin_user_expiration' 'admin_user_session' 'admin_system_messages' 'adminnotification_inbox'
         'sales_order' 'sales_order_address' 'sales_order_grid' 'sales_order_item' 'sales_order_payment' 'sales_order_status_history' 'sales_order_tax' 'sales_order_tax_item' 'magento_sales_order_grid_archive'
         'sales_invoice' 'sales_invoice_comment' 'sales_invoice_grid' 'sales_invoice_item' 'magento_sales_invoice_grid_archive'
         'sales_shipment' 'sales_shipment_comment' 'sales_shipment_grid' 'sales_shipment_item' 'sales_shipment_track' 'magento_sales_shipment_grid_archive'
