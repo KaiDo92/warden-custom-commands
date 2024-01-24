@@ -18,7 +18,7 @@ Useful URLs on DEV:
 * [Warden](https://docs.warden.dev/) 1.0.0 or later is installed. See
   the [Installing Warden](https://docs.warden.dev/installing.html) docs page for further info and procedures.
 
-1. Install docker and docker-compose
+1. Install Docker and Docker Compose
     ```
     sudo apt-get update
     sudo apt-get install ca-certificates curl gnupg lsb-release
@@ -28,8 +28,6 @@ Useful URLs on DEV:
     sudo apt-get update
     sudo apt-get install docker-ce docker-ce-cli containerd.io docker-compose-plugin
     sudo service docker start
-    sudo curl -L "https://github.com/docker/compose/releases/download/v2.16.0/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-    sudo chmod +x /usr/local/bin/docker-compose
     ```
 2. Fix docker command permission
     ```
