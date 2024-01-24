@@ -101,7 +101,7 @@ if [[ $OSTYPE =~ ^darwin ]] && ! which mutagen >/dev/null 2>&1 && which brew >/d
 fi
 
 ## check for presence of host machine dependencies
-for DEP_NAME in warden mutagen docker-compose pv; do
+for DEP_NAME in warden mutagen pv; do
     if [[ "${DEP_NAME}" = "mutagen" ]] && [[ ! $OSTYPE =~ ^darwin ]]; then
         continue
     fi
