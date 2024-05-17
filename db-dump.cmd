@@ -177,10 +177,10 @@ function dumpPremise () {
     echo -e "⌛ \033[1;32mDumping \033[33m${db_name}\033[1;32m database from \033[33m${ENV_SOURCE_HOST}\033[1;32m...\033[0m"
 
     local db_dump="export MYSQL_PWD='${db_pass}'; mysqldump -h$db_host -P$db_port -u$db_user $db_name --no-tablespaces --single-transaction --no-data --routines | gzip"
-    ssh -p $ENV_SOURCE_PORT $ENV_SOURCE_USER@$ENV_SOURCE_HOST "$db_dump" > "$DUMP_FILENAME"
+    ssh -p $ENV_SOURCE_PORT $ENV_SOURCE_USER@$ENV_SOURCE_HOST "set -o pipefail; $db_dump" > "$DUMP_FILENAME"
 
     local db_dump="export MYSQL_PWD='${db_pass}'; mysqldump -h$db_host -P$db_port -u$db_user $db_name --no-tablespaces --single-transaction --skip-triggers --no-create-info "${ignored_opts[@]}" | gzip"
-    ssh -p $ENV_SOURCE_PORT $ENV_SOURCE_USER@$ENV_SOURCE_HOST "$db_dump" >> "$DUMP_FILENAME"
+    ssh -p $ENV_SOURCE_PORT $ENV_SOURCE_USER@$ENV_SOURCE_HOST "set -o pipefail; $db_dump" >> "$DUMP_FILENAME"
     echo -e "✅ \033[32mDatabase dump complete! File: $DUMP_FILENAME\033[0m"
 }
 
