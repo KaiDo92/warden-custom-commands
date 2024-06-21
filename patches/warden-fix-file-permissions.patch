@@ -1,4 +1,8 @@
-@ -231,6 +231,19 @@ then
+diff --git a/commands/env.cmd b/commands/env.cmd
+index 7f464e1..edfd006 100644
+--- a/commands/env.cmd
++++ b/commands/env.cmd
+@@ -231,6 +231,19 @@ then
    fi
  fi
  
