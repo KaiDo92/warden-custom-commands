@@ -81,11 +81,11 @@ done
 ## download files from the remote
 if [[ $DOWNLOAD_SOURCE ]]; then
     warden download-source -e=${ENV_SOURCE}
-    warden env exec -T php-fpm sh -c "rm -rf /var/www/html/app/etc/env.php" || true
-    warden env exec -T php-fpm sh -c "mkdir /var/www/html/generated" || true
-    warden env exec -T php-fpm sh -c "mkdir /var/www/html/pub/media" || true
-    warden env exec -T php-fpm sh -c "mkdir /var/www/html/pub/static" || true
-    warden env exec -T php-fpm sh -c "mkdir /var/www/html/var" || true
+    warden env exec php-fpm sh -c "rm -rf /var/www/html/app/etc/env.php" || true
+    warden env exec php-fpm sh -c "mkdir /var/www/html/generated" || true
+    warden env exec php-fpm sh -c "mkdir /var/www/html/pub/media" || true
+    warden env exec php-fpm sh -c "mkdir /var/www/html/pub/static" || true
+    warden env exec php-fpm sh -c "mkdir /var/www/html/var" || true
 fi
 
 ## include check for DB_DUMP file only when database import is expected
@@ -145,9 +145,9 @@ warden shell -c "while ! nc -z db 3306 </dev/null; do sleep 2; done"
 
 if [[ $COMPOSER_INSTALL ]]; then
     :: Installing dependencies
-    warden env exec -T php-fpm bash \
+    warden env exec php-fpm bash \
       -c '[[ $(composer -V | cut -d\  -f3 | cut -d. -f1) == 2 ]] || composer global require hirak/prestissimo'
-    warden env exec -T php-fpm composer install
+    warden env exec php-fpm composer install
 fi
 
 ## import database only if --skip-db-import is not specified
@@ -234,18 +234,18 @@ fi
 
 if [[ ${CLEAN_INSTALL} ]] && [[ ! -f "${WARDEN_WEB_ROOT}/composer.json" ]]; then
     :: Installing Magento website
-    warden env exec -T php-fpm rsync -a auth.json /home/www-data/.composer/
-    warden env exec -T php-fpm sh -c "rm -rf /tmp/create-project"
-    warden env exec -T php-fpm composer create-project -q -n \
+    warden env exec php-fpm rsync -a auth.json /home/www-data/.composer/
+    warden env exec php-fpm sh -c "rm -rf /tmp/create-project"
+    warden env exec php-fpm composer create-project -q -n \
         --repository-url=https://repo.magento.com/ "${META_PACKAGE}" /tmp/create-project "${META_VERSION}"
-    warden env exec -T php-fpm rsync -a /tmp/create-project/ /var/www/html/
+    warden env exec php-fpm rsync -a /tmp/create-project/ /var/www/html/
 
     ELASTICSEARCH_HOSTNAME="elasticsearch"
     if [[ "$WARDEN_OPENSEARCH" -eq "1" ]]; then
         ELASTICSEARCH_HOSTNAME="opensearch"
     fi
 
-    warden env exec -T php-fpm bin/magento setup:install \
+    warden env exec php-fpm bin/magento setup:install \
         --backend-frontname=admin \
         --db-host=db \
         --db-name=magento \
@@ -264,10 +264,10 @@ warden set-config
 
 if [[ ${CLEAN_INSTALL} ]] && [[ $INCLUDE_SAMPLE ]]; then
     :: Installing sample data
-    warden env exec -T php-fpm bin/magento sample:deploy
-    warden env exec -T php-fpm bin/magento setup:upgrade
-    warden env exec -T php-fpm bin/magento indexer:reindex
-    warden env exec -T php-fpm bin/magento cache:flush
+    warden env exec php-fpm bin/magento sample:deploy
+    warden env exec php-fpm bin/magento setup:upgrade
+    warden env exec php-fpm bin/magento indexer:reindex
+    warden env exec php-fpm bin/magento cache:flush
 fi
 
 if [[ $MEDIA_SYNC ]]; then
@@ -277,7 +277,7 @@ fi
 
 if [[ $ADMIN_CREATE -eq "1" ]]; then
     :: Creating admin user
-    warden env exec -T php-fpm bin/magento admin:user:create \
+    warden env exec php-fpm bin/magento admin:user:create \
         --admin-user=admin \
         --admin-password=Admin123$ \
         --admin-firstname=Admin \
