@@ -144,8 +144,11 @@ For all commands, execute `warden <command> -h` to see the details of all option
 `warden download-source`
 * Download all source code from selected remote
 
-`warden sync-files`
+`warden download-files`
 * Download files from selected remote
+
+`warden upload-files`
+* Upload files to selected remote
 
 `warden set-config`
 * Update Magento configurations

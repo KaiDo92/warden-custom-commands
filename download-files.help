@@ -12,7 +12,7 @@ Extra options and arguments are passed through.
   -h, --help                                  Display this help menu
 
 \033[33mArguments:\033[0m
-  -e, --environment=<dev|production|staging>  Environment to sync files from. Default: dev
+  -e, --environment=<dev|production|staging>  Environment to sync files from. Default: staging
   -p, --path=<dump_path>                      Specify dump path. Default: pub/media/
 
 EOF
