@@ -35,14 +35,14 @@ function findLocalPort() {
 }
 
 function remote_db () {
-    REMOTE_PORT=3306
-    findLocalPort $REMOTE_PORT
-
     local db_info=$(ssh -p $ENV_SOURCE_PORT $ENV_SOURCE_USER@$ENV_SOURCE_HOST 'php -r "\$a=include \"'"$ENV_SOURCE_DIR"'/app/etc/env.php\"; var_export(\$a[\"db\"][\"connection\"][\"default\"]);"')
-    local db_host=$(warden env exec php-fpm php -r "\$a=$db_info;echo \$a['host'];")
-    local db_user=$(warden env exec php-fpm php -r "\$a=$db_info;echo \$a['username'];")
-    local db_pass=$(warden env exec php-fpm php -r "\$a=$db_info;echo \$a['password'];")
-    local db_name=$(warden env exec php-fpm php -r "\$a=$db_info;echo \$a['dbname'];")
+    local db_host=$(warden env exec php-fpm php -r "\$a = $db_info; echo strpos(\$a['host'], ':') === false ? \$a['host'] : explode(':', \$a['host'])[0];")
+    local db_port=$(warden env exec php-fpm php -r "\$a = $db_info; echo strpos(\$a['host'], ':') === false ? '3306' : explode(':', \$a['host'])[1];")
+    local db_user=$(warden env exec php-fpm php -r "\$a = $db_info; echo \$a['username'];")
+    local db_pass=$(warden env exec php-fpm php -r "\$a = $db_info; echo \$a['password'];")
+    local db_name=$(warden env exec php-fpm php -r "\$a = $db_info; echo \$a['dbname'];")
+
+    findLocalPort $db_port
 
     DB="mysql://$db_user:$db_pass@127.0.0.1:$LOCAL_PORT/$db_name"
 
@@ -53,7 +53,7 @@ function remote_db () {
 
     open_link $DB
 
-    ssh -L $LOCAL_PORT:"$db_host":"$REMOTE_PORT" -N -p $ENV_SOURCE_PORT $ENV_SOURCE_USER@$ENV_SOURCE_HOST || true
+    ssh -L $LOCAL_PORT:"$db_host":"$db_port" -N -p $ENV_SOURCE_PORT $ENV_SOURCE_USER@$ENV_SOURCE_HOST || true
 }
 
 function local_db() {
