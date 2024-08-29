@@ -138,9 +138,11 @@ function dumpCloud () {
         2>/dev/null || true)
     [[ -z "$db_name" ]] && RELATIONSHIP=database
 
-    for table in "${IGNORED_TABLES[@]}"; do
-        ignored_opts+=( --exclude-table="${DB_PREFIX}${table}" )
-    done
+    if [[ "$FULL_DUMP" -eq "0" ]]; then
+        for table in "${IGNORED_TABLES[@]}"; do
+            ignored_opts+=( --exclude-table="${DB_PREFIX}${table}" )
+        done
+    fi
 
     echo -e "⌛ \033[1;32mDumping \033[33m$ENV_SOURCE_HOST\033[1;32m database ...\033[0m"
     magento-cloud db:dump \
@@ -170,9 +172,11 @@ function dumpPremise () {
     local db_pass=$(warden env exec php-fpm php -r "\$a = $db_info; echo \$a['password'];")
     local db_name=$(warden env exec php-fpm php -r "\$a = $db_info; echo \$a['dbname'];")
 
-    for table in "${IGNORED_TABLES[@]}"; do
-        ignored_opts+=( --ignore-table="${db_name}.${DB_PREFIX}${table}" )
-    done
+    if [[ "$FULL_DUMP" -eq "0" ]]; then
+        for table in "${IGNORED_TABLES[@]}"; do
+            ignored_opts+=( --ignore-table="${db_name}.${DB_PREFIX}${table}" )
+        done
+    fi
 
     echo -e "⌛ \033[1;32mDumping \033[33m${db_name}\033[1;32m database from \033[33m${ENV_SOURCE_HOST}\033[1;32m...\033[0m"
 
@@ -185,6 +189,7 @@ function dumpPremise () {
 }
 
 DUMP_FILENAME=
+FULL_DUMP=0
 EXCLUDE_SENSITIVE_DATA=0
 
 while (( "$#" )); do
@@ -196,6 +201,10 @@ while (( "$#" )); do
         -f)
             DUMP_FILENAME="${2}"
             shift 2
+            ;;
+        --full)
+            FULL_DUMP=1
+            shift
             ;;
         --exclude-sensitive-data)
             EXCLUDE_SENSITIVE_DATA=1

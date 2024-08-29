@@ -129,7 +129,7 @@ For all commands, execute `warden <command> -h` to see the details of all option
 `warden db-dump`
 * Dump DB from selected remote
 
-`warden import-db`
+`warden db-import`
 * Import DB. File **must** be specified with option `--file`
 
 `warden sync-media`

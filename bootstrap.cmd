@@ -160,7 +160,7 @@ if [[ ${DB_IMPORT} ]]; then
 
     if [[ "$DB_DUMP" ]]; then
         :: Importing database
-        warden import-db --file="${DB_DUMP}"
+        warden db-import --file="${DB_DUMP}"
     fi
 fi
 
