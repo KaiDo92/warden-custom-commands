@@ -3,13 +3,7 @@
 
 function dumpCloud () {
     echo -e "\033[1;32mDownloading files from \033[33mAdobe Commerce Cloud \033[1;36m${ENV_SOURCE}\033[0m ..."
-    magento-cloud mount:download -p "$CLOUD_PROJECT" \
-        --environment="$ENV_SOURCE_HOST" \
-        "${exclude_opts[@]}" \
-        --mount=$DUMP_PATH \
-        --target=$DUMP_PATH \
-        -y \
-        || true
+    rsync -avz --progress "${exclude_opts[@]}" $(magento-cloud ssh --pipe -p "$CLOUD_PROJECT" -e "$ENV_SOURCE_HOST"):$DUMP_PATH $DUMP_PATH || true
 }
 
 function dumpPremise () {
