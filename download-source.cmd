@@ -21,6 +21,11 @@ function dumpPremise () {
 SUBCOMMAND_DIR=$(dirname "${BASH_SOURCE[0]}")
 source "${SUBCOMMAND_DIR}"/env-variables
 
+if [ -z ${!ENV_SOURCE_HOST_VAR+x} ]; then
+    echo "Invalid environment '${ENV_SOURCE}'"
+    exit 2
+fi
+
 EXCLUDE=('/generated' '/var' '/pub/media' '/pub/static' '*.gz' '*.zip' '*.tar' '*.7z' '*.sql')
 
 exclude_opts=()

@@ -4,6 +4,11 @@
 SUBCOMMAND_DIR=$(dirname "${BASH_SOURCE[0]}")
 source "${SUBCOMMAND_DIR}"/env-variables
 
+if [ -z ${!ENV_SOURCE_HOST_VAR+x} ]; then
+    echo "Invalid environment '${ENV_SOURCE}'"
+    exit 2
+fi
+
 function dumpCloud () {
     echo -e "\033[1;32mDownloading files from \033[33mAdobe Commerce Cloud \033[1;36m${ENV_SOURCE}\033[0m ..."
     magento-cloud mount:download -p "$CLOUD_PROJECT" \

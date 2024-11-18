@@ -157,6 +157,11 @@ function cloud_elasticsearch() {
 
 if [[ "$ENV_SOURCE_DEFAULT" -eq "1" ]]; then
     ENV_SOURCE_VAR="LOCAL"
+else
+    if [ -z ${!ENV_SOURCE_HOST_VAR+x} ]; then
+        echo "Invalid environment '${ENV_SOURCE}'"
+        exit 2
+    fi
 fi
 
 OPEN_CL=0

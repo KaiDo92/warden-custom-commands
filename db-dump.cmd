@@ -4,6 +4,11 @@
 SUBCOMMAND_DIR=$(dirname "${BASH_SOURCE[0]}")
 source "${SUBCOMMAND_DIR}"/env-variables
 
+if [ -z ${!ENV_SOURCE_HOST_VAR+x} ]; then
+    echo "Invalid environment '${ENV_SOURCE}'"
+    exit 2
+fi
+
 IGNORED_TABLES=(
     'cache_tag'
     'catalog_product_index_price_final_idx'

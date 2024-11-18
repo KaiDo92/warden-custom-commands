@@ -17,6 +17,7 @@ DB_IMPORT=1
 MEDIA_SYNC=1
 COMPOSER_INSTALL=1
 ADMIN_CREATE=1
+ENV_REQUIRED=
 
 ## argument parsing
 ## parse arguments
@@ -50,6 +51,7 @@ while (( "$#" )); do
         --download-source)
             DOWNLOAD_SOURCE=1
             COMPOSER_INSTALL=
+            ENV_REQUIRED=1
             shift
             ;;
         --skip-db-import)
@@ -70,6 +72,7 @@ while (( "$#" )); do
             ;;
         --db-dump=*)
             DB_DUMP="${1#*=}"
+            ENV_REQUIRED=1
             shift
             ;;
         *)
@@ -77,6 +80,12 @@ while (( "$#" )); do
             ;;
     esac
 done
+
+## validate the selected environment
+if [[ $ENV_REQUIRED ]] && [ -z ${!ENV_SOURCE_HOST_VAR+x} ]; then
+    echo "Invalid environment '${ENV_SOURCE}'"
+    exit 2
+fi
 
 ## download files from the remote
 if [[ $DOWNLOAD_SOURCE ]]; then
