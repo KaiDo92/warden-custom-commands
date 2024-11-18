@@ -41,7 +41,7 @@ ENV_SOURCE_VAR=$(echo "$ENV_SOURCE" | tr '[:lower:]' '[:upper:]')
 
 if [[ "$ENV_SOURCE_VAR" == "PRODUCTION" ]]; then
     ENV_SOURCE_VAR="PROD"
-elif [[ "$ENV_SOURCE_VAR" == "STAG" ]]; then
+elif [[ "$ENV_SOURCE_VAR" == "STAG" || "$ENV_SOURCE_VAR" == "STG" || "$ENV_SOURCE_VAR" == "PREPROD" ]]; then
     ENV_SOURCE_VAR="STAGING"
 elif [[ "$ENV_SOURCE_VAR" == "DEVELOP" || "$ENV_SOURCE_VAR" == "DEVELOPER" || "$ENV_SOURCE_VAR" == "DEVELOPMENT" ]]; then
     ENV_SOURCE_VAR="DEV"
